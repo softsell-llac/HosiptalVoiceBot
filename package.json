@@ -4,6 +4,8 @@
     "@fastify/websocket": "^11.0.2",
     "dotenv": "^16.4.7",
     "fastify": "^5.2.1",
-    "ws": "^8.18.1"
+    "ws": "^8.18.1",
+    "type": "module",
+  "main": "index.js"
   }
 }
