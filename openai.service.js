@@ -178,6 +178,33 @@ async function sendToWebhook(url, payload) {
     }
 }
 
+const pool = mysql.createPool({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
+  });
+  
+  // Function to save appointment details
+  export async function saveAppointmentDetails({ customerName, dateOfBirth, phoneNumber, doctorName, appointmentDate }) {
+    const query = `
+      INSERT INTO appointments (customer_name, date_of_birth, phone_number, doctor_name, appointment_date)
+      VALUES (?, ?, ?, ?, ?)
+    `;
+  
+    try {
+      const [results] = await pool.execute(query, [customerName, dateOfBirth, phoneNumber, doctorName, appointmentDate]);
+      console.log('Appointment saved successfully:', results);
+      return results;
+    } catch (error) {
+      console.error('Error saving appointment:', error);
+      throw error;
+    }
+  }
+
 // Main function to extract and send customer details
 export async function processTranscriptAndSend(
     transcript,
@@ -211,6 +238,14 @@ export async function processTranscriptAndSend(
 
                 if (parsedContent) {
                     // Send the parsed content directly to the webhook
+                    
+                    const { customerName, customerAvailability, specialNotes } = parsedContent;
+                    const appointmentDetails = { customerName, dateOfBirth: specialNotes.dateOfBirth,
+                         phoneNumber: specialNotes.phoneNumber,
+                         doctorName: specialNotes.doctorName,appointmentDate: customerAvailability
+                         };
+
+        await saveAppointmentDetails(appointmentDetails);
                     await sendToWebhook(url, parsedContent);
                     console.log(
                         "Extracted and sent customer details:",
