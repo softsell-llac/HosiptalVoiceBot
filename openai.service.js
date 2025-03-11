@@ -1,4 +1,6 @@
 import WebSocket from "ws";
+import mysql from 'mysql2';
+
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 export function getOpenaiWebsocketInstance() {
